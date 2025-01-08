@@ -773,8 +773,8 @@ GameObject:
   - component: {fileID: 2017556139586391160}
   - component: {fileID: 7012065720999766353}
   - component: {fileID: 7591958958565325838}
-  - component: {fileID: 1382818378053114421}
-  - component: {fileID: 7405884325967354922}
+  - component: {fileID: 8913900885473297074}
+  - component: {fileID: 5017059371061741693}
   m_Layer: 0
   m_Name: Vehicle
   m_TagString: Untagged
@@ -938,7 +938,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  reconciliationError: 3
+  reconciliationCooldownTime: 1
+  reconciliationThreshold: 10
+  extrapolationLimit: 0.5
+  extrapolationMultiplier: 1.2
 --- !u!114 &7591958958565325838
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -951,8 +954,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba3499f6ea6446ff906453d9e4e8f8d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ShowTopMostFoldoutHeaderGroup: 1
---- !u!114 &1382818378053114421
+  currentRacePoint: {fileID: 0}
+--- !u!114 &8913900885473297074
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -961,11 +964,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 7485410287201241827}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Script: {fileID: 11500000, guid: 84f905ec0fa04157ba9ce00193288f1a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  NetworkTransformExpanded: 0
+  NetworkTransformExpanded: 1
   AuthorityMode: 0
   TickSyncChildren: 0
   UseUnreliableDeltas: 0
@@ -978,17 +981,18 @@ MonoBehaviour:
   SyncScaleX: 0
   SyncScaleY: 0
   SyncScaleZ: 0
-  PositionThreshold: 1
-  RotAngleThreshold: 8
-  ScaleThreshold: 1
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
   UseQuaternionSynchronization: 0
   UseQuaternionCompression: 0
   UseHalfFloatPrecision: 0
   InLocalSpace: 0
   SwitchTransformSpaceWhenParented: 0
-  Interpolate: 0
-  SlerpPosition: 0
---- !u!114 &7405884325967354922
+  Interpolate: 1
+  SlerpPosition: 1
+  authorityMode: 1
+--- !u!114 &5017059371061741693
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1002,9 +1006,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   NetworkRigidbodyBaseExpanded: 0
-  UseRigidBodyForMotion: 1
-  AutoUpdateKinematicState: 0
-  AutoSetKinematicOnDespawn: 1
+  UseRigidBodyForMotion: 0
+  AutoUpdateKinematicState: 1
+  AutoSetKinematicOnDespawn: 0
 --- !u!1001 &5399706150022671607
 PrefabInstance:
   m_ObjectHideFlags: 0
