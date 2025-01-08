@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using CarController.Payload;
 using Tools;
 using Tools.Extensions;
+using Unity.Cinemachine;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -12,6 +13,16 @@ namespace CarController
     [RequireComponent(typeof(CarController))]
     public class CarInput : NetworkBehaviour
     {
+        [Header("References")]
+        [SerializeField] private CinemachineCamera lookCamera;
+        [SerializeField] private AudioListener audioListener;
+        
+        [Header("Configuration")] 
+        [SerializeField] float reconciliationCooldownTime = 1f;
+        [SerializeField] float reconciliationThreshold = 10f;
+        [SerializeField] float extrapolationLimit = 0.5f;
+        [SerializeField] float extrapolationMultiplier = 1.2f;
+        
         // Netcode general
         private NetworkTimer _networkTimer;
         private const float ServerTickRate = 60f; // 60 FPS
@@ -28,12 +39,6 @@ namespace CarController
         // Netcode server specific
         private CircularBuffer<StatePayload> _serverStateBuffer;
         private Queue<InputPayload> _serverInputQueue;
-
-        [Header("Netcode")] 
-        [SerializeField] float reconciliationCooldownTime = 1f;
-        [SerializeField] float reconciliationThreshold = 10f;
-        [SerializeField] float extrapolationLimit = 0.5f;
-        [SerializeField] float extrapolationMultiplier = 1.2f;
         
         private CountdownTimer _reconciliationTimer;
         private CountdownTimer _extrapolationTimer;
@@ -44,6 +49,17 @@ namespace CarController
 
         private void Start()
         {
+            if (!IsOwner)
+            {
+                lookCamera.Priority = 0;
+                audioListener.enabled = false;
+            }
+            else
+            {
+                lookCamera.Priority = 100;
+                audioListener.enabled = true;
+            }
+            
             _car = GetComponent<CarController>();
             _carSpawns = GetComponent<CarSpawns>();
             _clientNetworkTransform = GetComponent<ClientNetworkTransform>();
@@ -100,7 +116,9 @@ namespace CarController
 
         void HandleServerTick() {
             if (!IsServer) return;
-             
+            
+            Move(new InputPayload.InputData());
+            
             var bufferIndex = -1;
             while (_serverInputQueue.Count > 0) {
                 InputPayload inputPayload = _serverInputQueue.Dequeue();
