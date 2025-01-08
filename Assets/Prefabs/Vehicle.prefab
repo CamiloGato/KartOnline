@@ -939,9 +939,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   reconciliationCooldownTime: 1
-  reconciliationThreshold: 10
-  extrapolationLimit: 0.5
-  extrapolationMultiplier: 1.2
+  reconciliationThreshold: 0.5
+  extrapolationLimit: 0.3
+  extrapolationMultiplier: 1
 --- !u!114 &7591958958565325838
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1006,9 +1006,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   NetworkRigidbodyBaseExpanded: 0
-  UseRigidBodyForMotion: 0
-  AutoUpdateKinematicState: 1
-  AutoSetKinematicOnDespawn: 0
+  UseRigidBodyForMotion: 1
+  AutoUpdateKinematicState: 0
+  AutoSetKinematicOnDespawn: 1
 --- !u!1001 &5399706150022671607
 PrefabInstance:
   m_ObjectHideFlags: 0

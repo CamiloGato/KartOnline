@@ -75,6 +75,9 @@ namespace CarController
         private void Update()
         {
             _networkTimer.Update(Time.deltaTime);
+            _reconciliationTimer.Tick(Time.deltaTime);
+            _extrapolationTimer.Tick(Time.deltaTime);
+            Extraplolate();
         }
 
         void FixedUpdate() {
@@ -92,21 +95,20 @@ namespace CarController
             _clientNetworkTransform.SyncPositionX = shouldSync;
             _clientNetworkTransform.SyncPositionY = shouldSync;
             _clientNetworkTransform.SyncPositionZ = shouldSync;
+            _car.CarRigidbody.isKinematic = !shouldSync;
         }
 
         void HandleServerTick() {
             if (!IsServer) return;
              
             var bufferIndex = -1;
-            InputPayload inputPayload = default;
             while (_serverInputQueue.Count > 0) {
-                inputPayload = _serverInputQueue.Dequeue();
-                
+                InputPayload inputPayload = _serverInputQueue.Dequeue();
                 bufferIndex = inputPayload.Tick % BufferSize;
 
                 StatePayload statePayload;
                 
-                if (IsHost) //If we don't check if its host then we will have double input from host. I mean host will move twice faster than he should
+                if (IsHost)
                 {
                     statePayload = new StatePayload()
                     {
@@ -128,28 +130,27 @@ namespace CarController
             
             if (bufferIndex == -1) return;
             SendToClientRpc(_serverStateBuffer.Get(bufferIndex));
-            HandleExtrapolation(_serverStateBuffer.Get(bufferIndex), CalculateLatencyInMillis(inputPayload));
+            float latency = (float) (NetworkManager.ServerTime.Time - NetworkManager.LocalTime.Time);
+            HandleExtrapolation(_serverStateBuffer.Get(bufferIndex), latency);
         }
-
-        static float CalculateLatencyInMillis(InputPayload inputPayload) => (DateTime.Now - inputPayload.Timestamp).Milliseconds / 1000f;
 
         void Extraplolate() {
             if (IsServer && _extrapolationTimer.IsRunning) {
                 transform.position += _extrapolationState.Position.With(y: 0);
             }
         }
-
+        
+        private float _smoothedLatency;
         void HandleExtrapolation(StatePayload latest, float latency) {
+            _smoothedLatency = Mathf.Lerp(_smoothedLatency, latency, 0.1f);
             if (ShouldExtrapolate(latency)) {
-                // Calculate the arc the object would traverse in degrees
                 float axisLength = latency * latest.AngularVelocity.magnitude * Mathf.Rad2Deg;
                 Quaternion angularRotation = Quaternion.AngleAxis(axisLength, latest.AngularVelocity);
                 
                 if (_extrapolationState.Position != default) {
                     latest = _extrapolationState;
                 }
-
-                // Update position and rotation based on extrapolation
+                
                 var posAdjustment = latest.Velocity * (1 + latency * extrapolationMultiplier);
                 _extrapolationState.Position = posAdjustment;
                 _extrapolationState.Rotation = angularRotation * transform.rotation;
@@ -212,9 +213,9 @@ namespace CarController
             if (!ShouldReconcile()) return;
 
             var bufferIndex = _lastServerState.Tick % BufferSize;
-            if (bufferIndex - 1 < 0) return; // Not enough information to reconcile
+            if (bufferIndex - 1 < 0) return;
             
-            StatePayload rewindState = IsHost ? _serverStateBuffer.Get(bufferIndex - 1) : _lastServerState; // Host RPCs execute immediately, so we can use the last server state
+            StatePayload rewindState = IsHost ? _serverStateBuffer.Get(bufferIndex - 1) : _lastServerState;
             StatePayload clientState = IsHost ? _clientStateBuffer.Get(bufferIndex - 1) : _clientStateBuffer.Get(bufferIndex);
             var positionError = Vector3.Distance(rewindState.Position, clientState.Position);
 
