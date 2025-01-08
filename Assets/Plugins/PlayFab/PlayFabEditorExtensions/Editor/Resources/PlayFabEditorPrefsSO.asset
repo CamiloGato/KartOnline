@@ -15,10 +15,10 @@ MonoBehaviour:
   DevAccountEmail: camilo.r@polygon.us
   DevAccountToken: pwf9q5jiewcg7i5kkfsjmgazf14nceb55n95p77cnix6bprdtkt839bjo51ozc1cqjejhxcddycyyfsj8ct84oi3mdn4d8qsom3rezj3nq5p8fepcu4wzd7dbab36wkkob5ewzm49oaob9gntzzmwxzps1fb6en5ygpw69kw79meoqs7u5cz4cftqed1j1thwtkacgtd
   AadAuthorization: 
-  SelectedStudio: 
+  SelectedStudio: AcademyTest
   SdkPath: Assets/Plugins/PlayFab/PlayFabSDK
   EdExPath: 
-  LocalCloudScriptPath: 
+  LocalCloudScriptPath: C:/Users/cmand/Documents/Github/KartOnline/AssetsPlugins/PlayFab/PlayFabEditorExtensions/Editor/Resources/.CloudScript.js
   PanelIsShown: 0
   curMainMenuIdx: 0
   curSubMenuIdx: 0
