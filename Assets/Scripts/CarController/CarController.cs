@@ -47,6 +47,7 @@ namespace CarController
         [SerializeField] private WheelCollider rearRightCollider;
 
         // Properties
+        
         /// <summary>
         /// Current approximate speed of the car (km/h). It's based on the front-left wheel's RPM.
         /// </summary>
@@ -71,6 +72,10 @@ namespace CarController
         /// Magnitude of linear velocity. Useful for speed comparisons.
         /// </summary>
         public float LinearVelocityMagnitude => _rb.linearVelocity.magnitude;
+        /// <summary>
+        /// Reference to the car's Rigidbody component.
+        /// </summary>
+        public Rigidbody CarRigidbody => _rb;
 
         // Private variables.
         private Rigidbody _rb;
