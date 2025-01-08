@@ -96,7 +96,8 @@ namespace CarController
             Extraplolate();
         }
 
-        void FixedUpdate() {
+        void FixedUpdate()
+        {
             while (_networkTimer.ShouldTick()) {
                 HandleClientTick();
                 HandleServerTick();
@@ -284,6 +285,8 @@ namespace CarController
             };
         }
 
+        #region MOVE METHODS
+        
         private void Move(InputPayload.InputData input)
         {
             HandleMovement(input);
@@ -348,5 +351,7 @@ namespace CarController
                 _car.Handbrake();
             }
         }
+        
+        #endregion
     }
 }

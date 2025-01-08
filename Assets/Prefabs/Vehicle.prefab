@@ -1069,7 +1069,7 @@ GameObject:
   - component: {fileID: 6501646041497380723}
   - component: {fileID: 3126242569660005129}
   - component: {fileID: 1662914963964428976}
-  - component: {fileID: 8859707631843513370}
+  - component: {fileID: -6074254124990082801}
   m_Layer: 0
   m_Name: Vehicle
   m_TagString: Untagged
@@ -1222,7 +1222,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 228344297
+  GlobalObjectIdHash: 2030420628
   InScenePlacedSourceGlobalObjectIdHash: 2030420628
   DeferredDespawnTick: 0
   Ownership: 1
@@ -1291,7 +1291,7 @@ MonoBehaviour:
   Interpolate: 1
   SlerpPosition: 0
   authorityMode: 1
---- !u!114 &8859707631843513370
+--- !u!114 &-6074254124990082801
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
