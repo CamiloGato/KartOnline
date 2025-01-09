@@ -1,17 +1,23 @@
-﻿using System.Globalization;
+﻿using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 using PlayFab;
 using PlayFab.ClientModels;
+using PlayFab.PfEditor.Json;
 
 public class PlayFabManager : MonoBehaviour
 {
-    void Start()
-    {
-        AuthenticatePlayer();
-    }
+    [Header("Player Data")]
+    [SerializeField] private int level;
+    [Header("Player Statistics")]
+    [SerializeField] private int score;
 
+    [Header("Cloud Scripts")]
+    [SerializeField] private string userName;
+    
     // 1. Autenticación y Gestión de Jugadores
-    private void AuthenticatePlayer()
+    [ContextMenu("Authenticate")]
+    public void AuthenticatePlayer()
     {
         LoginWithCustomIDRequest request = new LoginWithCustomIDRequest
         {
@@ -36,11 +42,12 @@ public class PlayFabManager : MonoBehaviour
     }
 
     // 2. Gestión de Datos del Jugador
-    public void SavePlayerData(int level)
+    [ContextMenu("SavePlayerData")]
+    public void SavePlayerData()
     {
         UpdateUserDataRequest request = new UpdateUserDataRequest
         {
-            Data = new System.Collections.Generic.Dictionary<string, string>
+            Data = new Dictionary<string, string>
             {
                 { "Level", level.ToString() },
                 { "LastUpdated", System.DateTime.Now.ToString(CultureInfo.InvariantCulture) }
@@ -76,11 +83,12 @@ public class PlayFabManager : MonoBehaviour
     }
 
     // 3. Estadísticas y Tablas de Clasificación
-    public void UpdatePlayerStatistics(int score)
+    [ContextMenu("UpdatePlayerStatistics")]
+    public void UpdatePlayerStatistics()
     {
-        var request = new UpdatePlayerStatisticsRequest
+        UpdatePlayerStatisticsRequest request = new UpdatePlayerStatisticsRequest
         {
-            Statistics = new System.Collections.Generic.List<StatisticUpdate>
+            Statistics = new List<StatisticUpdate>
             {
                 new StatisticUpdate { StatisticName = "HighScore", Value = score }
             }
@@ -94,6 +102,7 @@ public class PlayFabManager : MonoBehaviour
         Debug.Log("Estadísticas del jugador actualizadas.");
     }
 
+    [ContextMenu("GetLeaderboard")]
     public void GetLeaderboard()
     {
         var request = new GetLeaderboardRequest
@@ -143,6 +152,27 @@ public class PlayFabManager : MonoBehaviour
         {
             Debug.Log($"Item en inventario: {item.ItemId}");
         }
+    }
+    
+    // 5. Cloud Scripts
+    [ContextMenu("CloudHelloWorld")]
+    public void StartCloudHelloWorld()
+    {
+        ExecuteCloudScriptRequest request = new ExecuteCloudScriptRequest()
+        {
+            FunctionName = "helloWorld",
+            FunctionParameter = new { inputValue = userName },
+            GeneratePlayStreamEvent = true,
+        };
+        
+        PlayFabClientAPI.ExecuteCloudScript(request, OnCloudHelloWorld, OnError);
+    }
+
+    private static void OnCloudHelloWorld(ExecuteCloudScriptResult result) {
+        Debug.Log(JsonWrapper.SerializeObject(result.FunctionResult));
+        JsonObject jsonResult = (JsonObject)result.FunctionResult;
+        jsonResult.TryGetValue("messageValue", out object messageValue);
+        Debug.Log((string) messageValue);
     }
 
     private void OnError(PlayFabError error)
