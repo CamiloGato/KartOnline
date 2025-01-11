@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using PlayFab.ClientModels;
+﻿using PlayFab.ClientModels;
+using PlayFab.CloudScriptModels;
 using PlayFab.PfEditor.Json;
 using TMPro;
 using UnityEngine;
@@ -143,32 +143,33 @@ namespace PlayFab
 
         private void CheckFirstSession()
         {
-            ExecuteCloudScriptRequest request = new ExecuteCloudScriptRequest()
+            ExecuteFunctionRequest request = new ExecuteFunctionRequest()
             {
-                FunctionName = "grantVirtualCurrency",
+                FunctionName = "SimpleReward",
                 GeneratePlayStreamEvent = true,
             };
             
-            PlayFabClientAPI.ExecuteCloudScript(request, OnExecuteScript, OnError);
+            PlayFabCloudScriptAPI.ExecuteFunction(request, OnExecuteFunction, OnError);
         }
 
-        private void OnExecuteScript(ExecuteCloudScriptResult result)
+        private void OnExecuteFunction(ExecuteFunctionResult result)
         {
             string json = JsonWrapper.SerializeObject(result.FunctionResult);
-            Dictionary<string, object> data = JsonUtility.FromJson<Dictionary<string, object>>(json);
-            
-            data.TryGetValue("grantedAmount", out object grantedAmount);
-            data.TryGetValue("userLevel", out object userLevel);
-            data.TryGetValue("message", out object message);
-            
-            string grantedAmountText = grantedAmount != null ? grantedAmount.ToString() : "-";
-            userCoinsTmp.text = grantedAmountText;
-            
-            string userLevelText = userLevel != null ? userLevel.ToString() : "-";
-            userLevelTmp.text = userLevelText;
-            
-            string messageText = message != null ? message.ToString() : "No Feedback";
-            feedbackTmp.text = messageText;
+            feedbackTmp.text = json;
+            // Dictionary<string, object> data = JsonUtility.FromJson<Dictionary<string, object>>(json);
+            //
+            // data.TryGetValue("grantedAmount", out object grantedAmount);
+            // data.TryGetValue("userLevel", out object userLevel);
+            // data.TryGetValue("message", out object message);
+            //
+            // string grantedAmountText = grantedAmount != null ? grantedAmount.ToString() : "-";
+            // userCoinsTmp.text = grantedAmountText;
+            //
+            // string userLevelText = userLevel != null ? userLevel.ToString() : "-";
+            // userLevelTmp.text = userLevelText;
+            //
+            // string messageText = message != null ? message.ToString() : "No Feedback";
+            // feedbackTmp.text = messageText;
         }
 
         #endregion
