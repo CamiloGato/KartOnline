@@ -1,9 +1,11 @@
 ﻿using PlayFab.ClientModels;
 using PlayFab.CloudScriptModels;
+using PlayFab.EconomyModels;
 using PlayFab.PfEditor.Json;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using EntityKey = PlayFab.EconomyModels.EntityKey;
 
 namespace PlayFab
 {
@@ -27,6 +29,10 @@ namespace PlayFab
         [Header("Feedback")]
         [SerializeField] private TMP_Text feedbackTmp;
         
+        private PlayFabClientInstanceAPI _clientApi;
+        private PlayFabEconomyInstanceAPI _clientEconomyApi;
+        private PlayFabCloudScriptInstanceAPI _cloudScriptApi;
+        
         public void StartSession()
         {
             Authenticate();
@@ -48,18 +54,27 @@ namespace PlayFab
         
         private void Authenticate()
         {
+            string deviceUniqueIdentifier = SystemInfo.deviceUniqueIdentifier;
+            
+            _clientApi = new PlayFabClientInstanceAPI();
+            
             LoginWithCustomIDRequest request = new LoginWithCustomIDRequest()
             {
-                CustomId = SystemInfo.deviceUniqueIdentifier,
+                CustomId = deviceUniqueIdentifier,
                 CreateAccount = true
             };
             
-            PlayFabClientAPI.LoginWithCustomID(request, OnLoginSuccess, OnError);
+            _clientApi.LoginWithCustomID(request, OnLoginSuccess, OnError);
         }
 
         private void OnLoginSuccess(LoginResult result)
         {
             userIdTmp.text = result.PlayFabId;
+
+            PlayFabAuthenticationContext authenticationContext = result.AuthenticationContext;
+            
+            _clientEconomyApi = new PlayFabEconomyInstanceAPI(authenticationContext);
+            _cloudScriptApi = new PlayFabCloudScriptInstanceAPI(authenticationContext);
         }
         
         #endregion
@@ -69,7 +84,7 @@ namespace PlayFab
         {
             GetTitleDataRequest request = new GetTitleDataRequest();
             
-            PlayFabClientAPI.GetTitleData(request, OnTitleData, OnError);
+            _clientApi.GetTitleData(request, OnTitleData, OnError);
         }
 
         private void OnTitleData(GetTitleDataResult result)
@@ -89,12 +104,17 @@ namespace PlayFab
         private void LoadUserData()
         {
             GetUserDataRequest userDataRequest = new GetUserDataRequest();
-            GetUserInventoryRequest inventoryRequest = new GetUserInventoryRequest();
-            GetPlayerStatisticsRequest staticsRequest = new GetPlayerStatisticsRequest();
+            GetInventoryItemsRequest inventoryRequest = new GetInventoryItemsRequest()
+            {
+                Entity = new EntityKey()
+                {
+                    Id = "138D4A5DFA0C3F62",
+                    Type = "title_player_account"
+                }
+            };
             
-            PlayFabClientAPI.GetUserData(userDataRequest, OnUserData, OnError);
-            PlayFabClientAPI.GetUserInventory(inventoryRequest, OnUserInventory, OnError);
-            PlayFabClientAPI.GetPlayerStatistics(staticsRequest, OnPlayerStatistics, OnError);
+            _clientApi.GetUserData(userDataRequest, OnUserData, OnError);
+            _clientEconomyApi.GetInventoryItems(inventoryRequest, OnUserInventory, OnError);
         }
 
         private void OnUserData(GetUserDataResult result)
@@ -112,29 +132,19 @@ namespace PlayFab
             userLevelTmp.text = userLevelText;
         }
 
-        private void OnUserInventory(GetUserInventoryResult result)
+        private void OnUserInventory(GetInventoryItemsResponse result)
         {
-            result.VirtualCurrency.TryGetValue("CO", out int currency);
-            userCoinsTmp.text = currency.ToString();
-        }
-
-        private void OnPlayerStatistics(GetPlayerStatisticsResult result)
-        {
-            bool hasCurrencyGranted = false;
-
-            foreach (var statistic in result.Statistics)
+            foreach (var item in result.Items)
             {
-                if (statistic.StatisticName == "CurrencyGranted" && statistic.Value == 1)
+                if (item.Id == "b6191891-90ea-4749-a47a-222a9e46b180" && item.Amount > 0)
                 {
-                    hasCurrencyGranted = true;
-                    break;
+                    userCoinsTmp.text = item.Amount.ToString();
+                    return;
                 }
             }
-
-            if (!hasCurrencyGranted)
-            {
-                CheckFirstSession();
-            }
+            
+            userCoinsTmp.text = "0";
+            CheckFirstSession();
         }
 
         #endregion
@@ -149,27 +159,13 @@ namespace PlayFab
                 GeneratePlayStreamEvent = true,
             };
             
-            PlayFabCloudScriptAPI.ExecuteFunction(request, OnExecuteFunction, OnError);
+            _cloudScriptApi.ExecuteFunction(request, OnExecuteFunction, OnError);
         }
 
         private void OnExecuteFunction(ExecuteFunctionResult result)
         {
             string json = JsonWrapper.SerializeObject(result.FunctionResult);
             feedbackTmp.text = json;
-            // Dictionary<string, object> data = JsonUtility.FromJson<Dictionary<string, object>>(json);
-            //
-            // data.TryGetValue("grantedAmount", out object grantedAmount);
-            // data.TryGetValue("userLevel", out object userLevel);
-            // data.TryGetValue("message", out object message);
-            //
-            // string grantedAmountText = grantedAmount != null ? grantedAmount.ToString() : "-";
-            // userCoinsTmp.text = grantedAmountText;
-            //
-            // string userLevelText = userLevel != null ? userLevel.ToString() : "-";
-            // userLevelTmp.text = userLevelText;
-            //
-            // string messageText = message != null ? message.ToString() : "No Feedback";
-            // feedbackTmp.text = messageText;
         }
 
         #endregion
