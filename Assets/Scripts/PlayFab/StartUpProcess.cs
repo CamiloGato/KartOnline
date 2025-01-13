@@ -5,7 +5,6 @@ using PlayFab.PfEditor.Json;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using EntityKey = PlayFab.EconomyModels.EntityKey;
 
 namespace PlayFab
 {
@@ -104,7 +103,7 @@ namespace PlayFab
             GetUserDataRequest userDataRequest = new GetUserDataRequest();
             GetInventoryItemsRequest inventoryRequest = new GetInventoryItemsRequest()
             {
-                Entity = new EntityKey()
+                Entity = new EconomyModels.EntityKey()
                 {
                     Id = _clientApi.authenticationContext.EntityId,
                     Type = _clientApi.authenticationContext.EntityType
