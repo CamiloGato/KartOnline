@@ -16,7 +16,7 @@ namespace PlayFab
         [SerializeField] private TMP_Text titleMessageTmp;
         
         [Header("User Data")]
-        [SerializeField] private TMP_Text userIdTmp;
+        [SerializeField] private TMP_InputField userIdInputField;
         [SerializeField] private TMP_Text userNameTmp;
         [SerializeField] private TMP_Text userDescriptionTmp;
         [SerializeField] private TMP_Text userCoinsTmp;
@@ -32,17 +32,17 @@ namespace PlayFab
         private PlayFabClientInstanceAPI _clientApi;
         private PlayFabEconomyInstanceAPI _clientEconomyApi;
         private PlayFabCloudScriptInstanceAPI _cloudScriptApi;
+
+        private string _serverLabel;
         
         public void StartSession()
         {
             Authenticate();
-            startSessionButton.gameObject.SetActive(false);
         }
 
         public void SessionData()
         {
             LoadTitleData();
-            loadSessionButton.gameObject.SetActive(false);
         }
 
         public void SessionUser()
@@ -54,7 +54,7 @@ namespace PlayFab
         
         private void Authenticate()
         {
-            string deviceUniqueIdentifier = SystemInfo.deviceUniqueIdentifier;
+            string deviceUniqueIdentifier = userIdInputField.text;
             
             _clientApi = new PlayFabClientInstanceAPI();
             
@@ -66,15 +66,15 @@ namespace PlayFab
             
             _clientApi.LoginWithCustomID(request, OnLoginSuccess, OnError);
         }
-
+        
         private void OnLoginSuccess(LoginResult result)
         {
-            userIdTmp.text = result.PlayFabId;
-
             PlayFabAuthenticationContext authenticationContext = result.AuthenticationContext;
             
             _clientEconomyApi = new PlayFabEconomyInstanceAPI(authenticationContext);
             _cloudScriptApi = new PlayFabCloudScriptInstanceAPI(authenticationContext);
+            
+            ExecuteFunction("BodyRequest");
         }
         
         #endregion
@@ -89,12 +89,10 @@ namespace PlayFab
 
         private void OnTitleData(GetTitleDataResult result)
         {
-            JsonObject data = (JsonObject) JsonWrapper.DeserializeObject(result.Data["titleData"]);
-            data.TryGetValue("titleName", out object titleName);
-            data.TryGetValue("titleMessage", out object titleMessage);
+            result.Data.TryGetValue("Name", out string titleName);
             
-            titleNameTmp.text = titleName?.ToString();
-            titleMessageTmp.text = titleMessage?.ToString();
+            _serverLabel = titleName;
+            titleNameTmp.text = $"Server: {titleName}";
         }
         
         #endregion
@@ -108,8 +106,8 @@ namespace PlayFab
             {
                 Entity = new EntityKey()
                 {
-                    Id = "138D4A5DFA0C3F62",
-                    Type = "title_player_account"
+                    Id = _clientApi.authenticationContext.EntityId,
+                    Type = _clientApi.authenticationContext.EntityType
                 }
             };
             
@@ -119,15 +117,12 @@ namespace PlayFab
 
         private void OnUserData(GetUserDataResult result)
         {
-            result.Data.TryGetValue("userName", out UserDataRecord userName);
             result.Data.TryGetValue("userDescription", out UserDataRecord userDescription);
             result.Data.TryGetValue("userLevel", out UserDataRecord userLevel);
             
-            string userNameText = userName != null ? userName.ToString() : userIdTmp.text;
             string userDescriptionText = userDescription != null ? userDescription.ToString() : "NO DESCRIPTION";
             string userLevelText = userLevel != null ? userLevel.ToString() : "NO LEVEL";
             
-            userNameTmp.text = userNameText;
             userDescriptionTmp.text = userDescriptionText;
             userLevelTmp.text = userLevelText;
         }
@@ -138,25 +133,27 @@ namespace PlayFab
             {
                 if (item.Id == "b6191891-90ea-4749-a47a-222a9e46b180" && item.Amount > 0)
                 {
+                    print("COINS: " + item.Amount);
                     userCoinsTmp.text = item.Amount.ToString();
                     return;
                 }
             }
             
             userCoinsTmp.text = "0";
-            CheckFirstSession();
+            ExecuteFunction("SimpleReward");
         }
 
         #endregion
         
         #region CLOUD SCRIPTS
 
-        private void CheckFirstSession()
+        private void ExecuteFunction(string functionName)
         {
             ExecuteFunctionRequest request = new ExecuteFunctionRequest()
             {
-                FunctionName = "SimpleReward",
+                FunctionName = functionName,
                 GeneratePlayStreamEvent = true,
+                FunctionParameter = new { ServerLabel = _serverLabel }
             };
             
             _cloudScriptApi.ExecuteFunction(request, OnExecuteFunction, OnError);
