@@ -1,7 +1,9 @@
 ﻿using PlayFab.ClientModels;
 using PlayFab.CloudScriptModels;
 using PlayFab.EconomyModels;
+#if !UNITY_SERVER
 using PlayFab.PfEditor.Json;
+#endif
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -160,8 +162,10 @@ namespace PlayFab
 
         private void OnExecuteFunction(ExecuteFunctionResult result)
         {
+#if !UNITY_SERVER
             string json = JsonWrapper.SerializeObject(result.FunctionResult);
             feedbackTmp.text = json;
+#endif
         }
 
         #endregion

@@ -10,10 +10,6 @@ namespace Tools
         private void Start()
         {
             _networkManager = NetworkManager.Singleton;
-
-#if UNITY_SERVER
-            _networkManager.StartServer();
-#endif
         }
 
         void OnGUI()

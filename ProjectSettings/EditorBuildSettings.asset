@@ -11,7 +11,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Game.unity
     guid: 14e9712c9c077c6458cfb06c96ee6959
-  - enabled: 1
+  - enabled: 0
     path: Assets/Plugins/Smooth Sync/Netcode for GameObjects/Smooth Sync Example
       Scene/SmoothSyncNetcodeExample.unity
     guid: 7eacf4f8b0b9c4442953b0adbed3e9ae
