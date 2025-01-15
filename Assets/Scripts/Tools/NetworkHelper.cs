@@ -1,4 +1,5 @@
 ﻿using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 
 namespace Tools
@@ -7,9 +8,19 @@ namespace Tools
     {
         private static NetworkManager _networkManager;
 
+        private UnityTransport _transport; 
+            
         private void Start()
         {
             _networkManager = NetworkManager.Singleton;
+            _transport = (UnityTransport) _networkManager.NetworkConfig.NetworkTransport;
+            
+#if UNITY_SERVER
+            _networkManager.StartServer();
+            string address = _transport.ConnectionData.Address;
+            string port = _transport.ConnectionData.Port.ToString();
+            print($"Server started on: {address}:{port}");
+#endif
         }
 
         void OnGUI()
